@@ -1,0 +1,171 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+#install.packages("devtools")
+library(devtools)
+#install.packages("RcppArmadillo")
+#install_github("immunogenomics/harmony")
+#install.packages("Seurat")
+library(harmony)
+library(dplyr)
+library(Seurat)
+library(cowplot)
+library(ggplot2)
+
+```
+
+```{r}
+colors_use <- c(`jurkat` = '#810F7C', `t293` = '#D09E2D',`half` = '#006D2C')
+do_scatter <- function(umap_use, meta_data, label_name, no_guides = TRUE,
+                       do_labels = TRUE, nice_names, 
+                       palette_use = colors_use,
+                       pt_size = 4, point_size = .5, base_size = 12, 
+                       do_points = TRUE, do_density = FALSE, h = 6, w = 8) {
+    umap_use <- umap_use[, 1:2]
+    colnames(umap_use) <- c('X1', 'X2')
+    plt_df <- umap_use %>% data.frame() %>% 
+        cbind(meta_data) %>% 
+        dplyr::sample_frac(1L) 
+    plt_df$given_name <- plt_df[[label_name]]
+    
+    if (!missing(nice_names)) {
+        plt_df %<>%
+            dplyr::inner_join(nice_names, by = "given_name") %>% 
+            subset(nice_name != "" & !is.na(nice_name))
+        
+        plt_df[[label_name]] <- plt_df$nice_name        
+    }
+    
+    plt <- plt_df %>% 
+        ggplot2::ggplot(aes_string("X1", "X2", col = label_name, fill = label_name)) + 
+        theme_test(base_size = base_size) + 
+        theme(panel.background = element_rect(fill = NA, color = "black")) + 
+        guides(color = guide_legend(override.aes = list(stroke = 1, alpha = 1,
+                                                        shape = 16, size = 4)), 
+               alpha = FALSE) +
+        scale_color_manual(values = palette_use) + 
+        scale_fill_manual(values = palette_use) +    
+        theme(plot.title = element_text(hjust = .5)) + 
+        labs(x = "PC 1", y = "PC 2") 
+    
+    if (do_points) 
+        plt <- plt + geom_point(shape = '.')
+    if (do_density) 
+        plt <- plt + geom_density_2d()    
+    
+    
+    if (no_guides)
+        plt <- plt + guides(col = FALSE, fill = FALSE, alpha = FALSE)
+    
+    if (do_labels) {
+        data_labels <- plt_df %>% 
+            dplyr::group_by_(label_name) %>% 
+            dplyr::summarise(X1 = mean(X1), X2 = mean(X2)) %>% 
+            dplyr::ungroup()
+        
+        plt <- plt + geom_label(data = data_labels, label.size = NA,
+                        aes_string(label = label_name), 
+                        color = "white", size = pt_size, alpha = 1,
+                        segment.size = 0) +
+                guides(col = FALSE, fill = FALSE)
+    }
+    
+    return(plt)
+}
+
+```
+
+
+```{r}
+#cell_lines <- read.table('../testdata/cell_lines.RData')
+load('../testdata/cell_lines.RData')
+data(cell_lines)
+V <- cell_lines$scaled_pcs
+meta_data <- cell_lines$meta_data
+```
+
+```{r}
+MEL <- read.table('../testdata/MEL_small.txt')
+rownames(MEL) <- MEL[, 1]
+colnames(MEL) <- MEL[1, ]
+MEL <- MEL[2:nrow(MEL), 2:ncol(MEL)]
+HNSCC <- read.table('../testdata/HNSCC_small.txt')
+rownames(HNSCC) <- HNSCC[, 1]
+colnames(HNSCC) <- HNSCC[1,]
+HNSCC <- HNSCC[2:nrow(HNSCC), 2:ncol(HNSCC)]
+cell_lines2 <- cbind(MEL, HNSCC)
+head(cell_lines2)
+```
+
+```{r}
+load('../testdata/pbmc_stim.RData')
+pbmc <- CreateSeuratObject(counts = cbind(stim.sparse, ctrl.sparse), project = "PBMC", min.cells = 5) %>%
+    Seurat::NormalizeData(verbose = FALSE) %>%
+    FindVariableFeatures(selection.method = "vst", nfeatures = 2000) %>% 
+    ScaleData(verbose = FovALSE) %>% 
+    RunPCA(pc.genes = pbmc@var.genes, npcs = 20, verbose = FALSE)
+pbmc@meta.data$stim <- c(rep("STIM", ncol(stim.sparse)), rep("CTRL", ncol(ctrl.sparse)))
+```
+
+```{r}
+options(repr.plot.height = 5, repr.plot.width = 12)
+p1 <- DimPlot(object = pbmc, reduction = "pca", pt.size = .1, group.by = "stim")
+p2 <- VlnPlot(object = pbmc, features = "PC_1", group.by = "stim", pt.size = .1)
+plot_grid(p1,p2)
+```
+
+
+```{r}
+obj <- CreateSeuratObject(counts = cell_lines2, project = "harmony", min.cells = 3, min.genes = 200) %>%
+  Seurat::NormalizeData(verbose = FALSE) %>%
+  FindVariableFeatures(selection.method = "vst", nfeatures = 2000) %>%
+  ScaleData(verbose = FALSE) %>% 
+  RunPCA(pc.genes = pbmc@var.genes, npcs = 20, verbose = FALSE)
+obj$celltype <- c(rep("MEL", ncol(MEL)), rep("HNSCC", ncol(HNSCC)))
+```
+
+
+```{r}
+options(repr.plot.height = 5, repr.plot.width = 12)
+p1 <- DimPlot(object = obj, reduction = "pca", pt.size = .1, group.by = "celltype")
+p2 <- VlnPlot(object = obj, features = "PC_1", group.by = "celltype", pt.size = .1)
+plot_grid(p1,p2)
+```
+
+```{r}
+harmonizedobj <- obj %>%
+  RunHarmony(group.by = "celltype", plot_convergence = TRUE)
+```
+```{r}
+options(repr.plot.height = 5, repr.plot.width = 12)
+p1 <- DimPlot(object = harmonizedobj, reduction = "harmony", pt.size = .1, group.by = "celltype")
+p2 <- VlnPlot(object = harmonizedobj, features = "harmony_1", group.by = "celltype", pt.size = .1)
+plot_grid(p1,p2)
+```
+
+```{r}
+harmony_embeddings <- harmony::HarmonyMatrix(V, meta_data, 'dataset', do_pca = FALSE, verbose=FALSE)
+p1 <- do_scatter(harmony_embeddings, meta_data, 'dataset') + 
+    labs(title = 'Colored by dataset')
+p2 <- do_scatter(harmony_embeddings, meta_data, 'cell_type') + 
+    labs(title = 'Colored by cell type')
+cowplot::plot_grid(p1, p2, nrow = 1)
+```
+
+```{r}
+#install.packages("optparse")
+library("optparse")
+parser = OptionParser()
+
+
+parser <- add_option(parser, c("--data_mat"), help = "Matrix with coordinates for each cell (row) along many PCs (columns).", default = "NO_FILE")
+parser <- add_option(parser, c("--meta_data"), help = "Dataframe with information for each cell (row).", default = "NO_FILE")
+parser <- add_option(parser, c("--vars_use"), help = "Column in meta_data that defines dataset for each cell.", default = "NO_FILE")
+parser <- add_option(parser, c("--do_pca"), help = "Since we are providing PCs, do not run PCA.", default = "NO_FILE")
+```
+
+

@@ -1,0 +1,12 @@
+FROM rocker/r-ubuntu:20.04
+
+RUN mkdir /opt/genepatt
+WORKDIR /opt/genepatt
+RUN mkdir src
+RUN mkdir testdata
+
+RUN Rscript  -e "install.packages('devtools')"
+RUN Rscript  -e "devtools::install_github("immunogenomics/harmony")"
+RUN Rscript  -e "install.packages('optparse')"
+
+COPY src/* /opt/genepatt/src/
