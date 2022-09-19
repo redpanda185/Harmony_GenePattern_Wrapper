@@ -43,7 +43,7 @@ do_scatter <- function(umap_use, meta_data, label_name, no_guides = TRUE,
     plt <- plt_df %>% 
         ggplot2::ggplot(aes_string("X1", "X2", col = label_name, fill = label_name)) + 
         theme_test(base_size = base_size) + 
-        theme(panel.background = element_rect(fill = NA, color = "black")) + 
+        theme(panels.background = element_rect(fill = NA, color = "black")) + 
         guides(color = guide_legend(override.aes = list(stroke = 1, alpha = 1,
                                                         shape = 16, size = 4)), 
                alpha = FALSE) +
@@ -168,4 +168,101 @@ parser <- add_option(parser, c("--vars_use"), help = "Column in meta_data that d
 parser <- add_option(parser, c("--do_pca"), help = "Since we are providing PCs, do not run PCA.", default = "NO_FILE")
 ```
 
+```{r}
+library(devtools)
+library(harmony)
+library(dplyr)
+library(Seurat)
+library(optparse)
+library(cowplot)
+library(purrr)
+library(xfun)
+
+parser = OptionParser()
+parser <- add_option(parser, c("--file_list"), 
+                     help = "Matrix with coordinates for each cell (row) along many PCs (columns).", 
+                     default = "NO_FILE")
+
+print('================================================')
+args <- parse_args(parser)
+print('Parameters used:')
+print(args)
+print('================================================')
+
+# RUN_PREPROCESS <<- FALSE
+# 
+# if(tolower(args.data_preprocess) == "yes"){
+#   RUN_PREPROCESS <<- TRUE
+# }
+
+print(args$file_list)
+filelist <- "../file_list.txt"
+con <- file(filelist, open = "r")
+lines = readLines(con)
+panels = list(NA)
+i = 1
+for (line in lines) {
+  print("About to read")
+  print(line)
+  if (file_ext(line) == "rds") {
+    RDSinput = readRDS(line)
+    name = tail(strsplit(line, "/")[[1]], 1)
+    name <- gsub("\\.rds$", "", name)
+    print(paste0("Using ", name, " as the name of the column"))
+    panels[[i]] = RDSinput
+    names(panels)[[i]] = as.character(name)
+    i = i + 1
+  } else {
+    name = tail(strsplit(line, "/")[[1]], 1)
+    print(paste0("Using ", name, " as the name of the column"))
+    readTable = read.table(line, sep = "\t", header = TRUE, )
+    
+    # readTable = readTable[1:500,1:501] write.table(readTable, file =
+    # paste('small_500x500',name,sep='_'), sep = '\t',row.names = F, quote=F)
+    
+    row.names(readTable) <- readTable$symbol
+    readTable[1] <- NULL
+    
+    # print(readTable[1:6,1:6])
+    
+    panels[[i]] = as(as.matrix(readTable), "dgCMatrix")
+    names(panels)[[i]] = as.character(name)
+    i = i + 1
+  }
+}
+```
+
+```{r}
+data <- panels[[1]]
+metadata_list <- NULL
+for(x in 1:length(panels)){
+  if(x != 1){
+    data <- merge(data, panels[[x]], merge.dr = "pca")
+  }
+  metadata_list <- c(metadata_list, rep(names(panels)[x], ncol(panels[[x]])))
+}
+# data <- NormalizeData(data)
+# all.features <- rownames(data)
+# data <- ScaleData(data, features = all.features)
+data <- ScaleData(data)
+data$celltype <- metadata_list
+harmonizedData <- data %>%
+  harmony::RunHarmony(group.by = "celltype", plot_convergence = TRUE, reduction = "pca", assay.use = "RNA")
+```
+
+
+```{r}
+p1 <- DimPlot(object = harmonizedData, reduction = "harmony", pt.size = .1, group.by = "celltype", cols = c("black", "red", "orange"), label = TRUE)
+p2 <- VlnPlot(object = harmonizedData, features = "harmony_1", group.by = "celltype", pt.size = .1)
+plot_grid(p1,p2)
+```
+
+
+```{r}
+# harmonizedData <- data %>%
+#   RunHarmony(group.by = "orig.identity", plot_convergence = TRUE)
+# p1 <- DimPlot(object = harmonizedData, reduction = "harmony", pt.size = .1, group.by = "orig.identity")
+# p2 <- VlnPlot(object = harmonizedData, features = "harmony_1", group.by = "orig.identity", pt.size = .1)
+# plot_grid(p1,p2)
+```
 
