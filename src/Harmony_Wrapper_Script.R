@@ -1,10 +1,8 @@
-library(devtools)
 library(harmony)
 library(dplyr)
 library(Seurat)
 library(optparse)
 library(cowplot)
-library(purrr)
 library(xfun)
 
 parser = OptionParser()
