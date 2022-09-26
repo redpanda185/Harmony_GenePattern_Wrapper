@@ -7,20 +7,17 @@ library(xfun)
 
 parser = OptionParser()
 parser <- add_option(parser, c("--file_list"), 
-                     help = "Matrix with coordinates for each cell (row) along many PCs (columns).", 
+                     help = "list of files to read", 
                      default = "NO_FILE")
+parser <- add_option(parser, c("--output_file"), type = 'character',
+                     help = "Name of the file to save the data to", 
+                     default = "harmonized_data")
 
 print('================================================')
 args <- parse_args(parser)
 print('Parameters used:')
 print(args)
 print('================================================')
-
-# RUN_PREPROCESS <<- FALSE
-# 
-# if(tolower(args.data_preprocess) == "yes"){
-#   RUN_PREPROCESS <<- TRUE
-# }
 
 print(args$file_list)
 con <- file(args$file_list, open = "r")
@@ -42,10 +39,6 @@ for (line in lines) {
     name = tail(strsplit(line, "/")[[1]], 1)
     print(paste0("Using ", name, " as the name of the column"))
     readTable = read.table(line, sep = "\t", header = TRUE, )
-    
-    # readTable = readTable[1:500,1:501] write.table(readTable, file =
-    # paste('small_500x500',name,sep='_'), sep = '\t',row.names = F, quote=F)
-    
     row.names(readTable) <- readTable$symbol
     readTable[1] <- NULL
     
@@ -56,25 +49,6 @@ for (line in lines) {
     i = i + 1
   }
 }
-
-# do_preprocess(args){
-#   data_mat1 <- args$data_mat1
-#   rownames(data_mat1) <- data_mat1[, 1]
-#   colnames(data_mat1) <- data_mat1[1, ]
-#   data_mat1 <- data_mat1[2:nrow(data_mat1), 2:ncol(data_mat1)]
-#   data_mat2 <- args$data_mat2
-#   rownames(data_mat2) <- data_mat2[, 1]
-#   colnames(data_mat2) <- data_mat2[1, ]
-#   data_mat2 <- data_mat2[2:nrow(data_mat2), 2:ncol(data_mat2)]
-#   cell_lines <- cbind(data_mat1, data_mat2)
-#   obj <- CreateSeuratObject(counts = cell_lines, project = "harmony", min.cells = 3, min.genes = 200) %>%
-#     Seurat::NormalizeData(verbose = FALSE) %>%
-#     FindVariableFeatures(selection.method = "vst", nfeatures = 2000) %>%
-#     ScaleData(verbose = FALSE) %>% 
-#     RunPCA(pc.genes = pbmc@var.genes, npcs = 20, verbose = FALSE)
-#   obj$celltype <- c(rep("Type 1", ncol(data_mat1)), rep("Type 2", ncol(data_mat2)))  #Change nammes of cell types to something more appropriate or something that can be input
-#   return(obj)
-# }
 run_harmony <- function(datalist){
   data <- datalist[[1]]
   metadata_list <- NULL
@@ -92,24 +66,11 @@ run_harmony <- function(datalist){
   # p2 <- VlnPlot(object = harmonizedData, features = "harmony_1", group.by = "celltype", pt.size = .1)
   # plot_grid(p1,p2)
   return(harmonizedData)
-  # if(RUN_PREPROCESS){
-  #   seuratObj <- do_prepreocess(args)
-  #   harmonizedobj <- seuratObj %>%
-  #     RunHarmony(group.by = "celltype", plot_convergence = TRUE)
-  #   options(repr.plot.height = 5, repr.plot.width = 12)
-  #   p1 <- DimPlot(object = harmonizedobj, reduction = "harmony", pt.size = .1, group.by = "celltype")
-  #   p2 <- VlnPlot(object = harmonizedobj, features = "harmony_1", group.by = "celltype", pt.size = .1)
-  #   plot_grid(p1,p2)
-  # }
-  # else{
-  #   data_mat <- read.table(args$data_mat)
-  #   meta_dat <- read.table(args$meta_data)
-  #   harmonized_pcs <- harmony::HarmonyMatrix(
-  #     data_matrix  = data_mat,       # Matrix with coordinates for each cell (row) along many PCs (columns)
-  #     meta_data = meta_data, # Dataframe with information for each cell (row)
-  #     vars_use  = args$vars_use, # Column in meta_data that defines dataset for each cell
-  #     do_pca    = args$do_pca      # Since we are providing PCs, do not run PCA
-  #   )
-  # }
 }
-run_harmony(panels)
+save_it <- function(object, fileName){
+  saveRDS(object, file = fileName)
+  print("Saved file!")
+  return(object)
+}
+output <- run_harmony(panels)
+save_it(output, paste(args$output_file, '.rds', sep = ''))

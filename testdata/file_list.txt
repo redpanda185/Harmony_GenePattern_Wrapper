@@ -1,3 +1,0 @@
-../testdata/jurkrat.rds
-../testdata/293t.rds
-../testdata/5050.rds

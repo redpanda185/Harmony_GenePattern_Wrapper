@@ -15,7 +15,7 @@ library(dplyr)
 library(Seurat)
 library(cowplot)
 library(ggplot2)
-
+library(DropletUtils)
 ```
 
 ```{r}
@@ -249,6 +249,14 @@ data$celltype <- metadata_list
 harmonizedData <- data %>%
   harmony::RunHarmony(group.by = "celltype", plot_convergence = TRUE, reduction = "pca", assay.use = "RNA")
 ```
+```{r}
+save_it <- function(object, fileName){
+    saveRDS(object, file = fileName)
+    print("Saved file!")
+    return(object)
+}
+save_it(harmonizedData, "output.rds")
+```
 
 
 ```{r}
@@ -259,10 +267,7 @@ plot_grid(p1,p2)
 
 
 ```{r}
-# harmonizedData <- data %>%
-#   RunHarmony(group.by = "orig.identity", plot_convergence = TRUE)
-# p1 <- DimPlot(object = harmonizedData, reduction = "harmony", pt.size = .1, group.by = "orig.identity")
-# p2 <- VlnPlot(object = harmonizedData, features = "harmony_1", group.by = "orig.identity", pt.size = .1)
-# plot_grid(p1,p2)
+p <- readRDS("/Users/justinlee/Downloads/harmonized_data.rds")
+
 ```
 
