@@ -1,0 +1,38 @@
+[
+    {
+        "name": "Inputs",
+        "description": "Input file and basic customizations for Harmony",
+        "hidden": false,
+        "parameters": [
+            "file_list",
+            "output_file",
+            "cell_types",
+            "colors"
+        ]
+    },
+    {
+        "name": "Advanced parameters",
+        "description": "Advanced parameters for Harmony",
+        "hidden": true,
+        "parameters": [
+            "reduction",
+            "dims.use",
+            "theta",
+            "lambda",
+            "sigma",
+            "nclust",
+            "tau",
+            "block.size",
+            "max.iter.harmony",
+            "max.iter.cluster",
+            "epsilon.cluster",
+            "epsilon.harmony",
+            "plot_convergence",
+            "verbose",
+            "reference_values",
+            "reduction.save",
+            "assay.use",
+            "project.dim"
+        ]
+    }
+]

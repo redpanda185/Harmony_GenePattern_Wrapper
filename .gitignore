@@ -1,0 +1,12 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.file_list.txt.swp
+.DS_Store
+src/.DS_Store
+src/.RData
+src/.Rhistory
+testdata/.DS_Store
+Testing/.Rdata
+Testing/.Rhistory

@@ -15,7 +15,6 @@ library(dplyr)
 library(Seurat)
 library(cowplot)
 library(ggplot2)
-library(DropletUtils)
 ```
 
 ```{r}
@@ -236,10 +235,12 @@ for (line in lines) {
 data <- panels[[1]]
 metadata_list <- NULL
 for(x in 1:length(panels)){
-  if(x != 1){
-    data <- merge(data, panels[[x]], merge.dr = "pca")
+  if(x != 3){
+    if(x != 1){
+      data <- merge(data, panels[[x]], merge.dr = "pca")
+    }
+    metadata_list <- c(metadata_list, rep(names(panels)[x], ncol(panels[[x]])))
   }
-  metadata_list <- c(metadata_list, rep(names(panels)[x], ncol(panels[[x]])))
 }
 # data <- NormalizeData(data)
 # all.features <- rownames(data)
@@ -260,14 +261,40 @@ save_it(harmonizedData, "output.rds")
 
 
 ```{r}
-p1 <- DimPlot(object = harmonizedData, reduction = "harmony", pt.size = .1, group.by = "celltype", cols = c("black", "red", "orange"), label = TRUE)
+
 p2 <- VlnPlot(object = harmonizedData, features = "harmony_1", group.by = "celltype", pt.size = .1)
 plot_grid(p1,p2)
+
 ```
 
+```{r}
+p1 <- DimPlot(object = harmonizedData, reduction = "harmony", pt.size = .1, group.by = "celltype", cols = c("green", "blue"), label = FALSE)
+p3 <- DimPlot(object = data, reduction = "pca", pt.size = .1, group.by = "celltype", cols = c("green", "blue"), label = FALSE)
+# p4 <- VlnPlot(object = data, features = "harmony_2", group.by = "celltype", pt.size = .1)
+plot_grid(p3,p1)
+```
 
 ```{r}
 p <- readRDS("/Users/justinlee/Downloads/harmonized_data.rds")
 
+```
+```{r}
+p <- readRDS("../src/poop.rds")
+```
+```{r fig.width = 2, fig.height =2}
+p5 <- DimPlot(object = p, reduction = "harmony", pt.size = .1, group.by = "celltype", cols = c("yellow", "blue", "black"), label = FALSE)
+plot(p5)
+```
+
+```{r}
+load("pbmc_stim.RData")
+ctrl.seurat <- CreateSeuratObject(counts = ctrl.sparse, min.cells = 5)
+stim.seurat <- CreateSeuratObject(counts = stim.sparse, min.cells = 5)
+saveRDS(ctrl.seurat, file = "~/Documents/GitHub/Harmony_GenePattern_Wrapper/Testing/ctrl.seurat.rds")
+saveRDS(stim.seurat, file = "~/Documents/GitHub/Harmony_GenePattern_Wrapper/Testing/stim.seurat.rds")
+```
+
+```{r}
+cell_lines
 ```
 
