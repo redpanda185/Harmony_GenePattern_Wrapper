@@ -16,6 +16,7 @@ Here are the basic parameters you will need in order to run the Harmony module
     The name of the metadata column you would like to group by during visualization. If no group name is specified, then Harmony will group by dataset by default.
   5. Colors (optional)
     The colors you want to use to label your groups during visualization. If no colors are specified, then they will be automatically assigned. Refer to this link to see the list of color options to choose from: https://www.datanovia.com/en/blog/awesome-list-of-657-r-color-names/
+
 ### Advanced Parameters
 These parameters are for more advanced use. They are all optional.
   6. reduction
