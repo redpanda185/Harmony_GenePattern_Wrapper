@@ -4,13 +4,14 @@
         "description": "Input file and basic customizations for Harmony",
         "hidden": false,
         "parameters": [
-            "file_list",
-            "output_file",
-            "cell_types",
-            "colors"
+            "Input.RDS.Files",
+            "Output.Name",
+            "Cell.Types",
+            "Group.Name",
+            "Colors"
         ]
     },
-    {
+    {       
         "name": "Advanced parameters",
         "description": "Advanced parameters for Harmony",
         "hidden": true,
@@ -25,7 +26,9 @@
             "block.size",
             "max.iter.harmony",
             "max.iter.cluster",
+            "stop.early.cluster",
             "epsilon.cluster",
+            "stop.early.harmony",
             "epsilon.harmony",
             "plot_convergence",
             "verbose",

@@ -1,0 +1,41 @@
+
+name: Harmony_test_1
+# description: created from job 90608
+# ET(ms): 656000# from server:  https://beta.genepattern.org/gp/
+module: Harmony
+# lsid: urn:lsid:8080.gpserver.ip-172-31-26-71.ip-172-31-26-71.ec2.internal:genepatternmodules:676:3.5
+params: 
+    "Input.RDS.Files": "inputs/Input.RDS.Files.list.txt"
+    "Output.Name": "harmonized_data"
+    "Cell.Types": "[]"
+    "Group.Name": "celltype"
+    "Colors": "[]"
+    "reduction": "pca"
+    "dims.use": "[]"
+    "theta": "2"
+    "lambda": "1"
+    "sigma": "0.1"
+    "nclust": ""
+    "tau": "0"
+    "block.size": "0.05"
+    "max.iter.harmony": "10"
+    "max.iter.cluster": "20"
+    "stop.early.cluster": "TRUE"
+    "epsilon.cluster": "0.00005"
+    "stop.early.harmony": "TRUE"
+    "epsilon.harmony": "0.0004"
+    "plot_convergence": "TRUE"
+    "verbose": "TRUE"
+    "reference_values": ""
+    "reduction.save": ""
+    "assay.use": ""
+    "project.dim": "TRUE"
+
+assertions: 
+    jobStatus: success
+    files: 
+        Rplots.pdf: !!null
+        harmonized_data.rds: !!null
+        harmonized_data_plot.png: !!null
+        stderr.txt: !!null
+        stdout.txt: !!null
