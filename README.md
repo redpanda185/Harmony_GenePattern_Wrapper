@@ -5,7 +5,7 @@ Harmony is a tool used to correct batch effects in single-cell RNA seq datasets.
  
 ## How to use Harmony
 ### Basic Parameters
-Here are the basic parameters you will need in order to run the Harmony module
+Here are the basic parameters you will need in order to run the Harmony module.
   1. **Input RDS Files (required)**
     The list of datasets you wish to analyze with Harmony. Each dataset must consist of one group of data, and must be a Seurat object in an .rds file.
   2. **Output Name (required)**
@@ -19,6 +19,7 @@ Here are the basic parameters you will need in order to run the Harmony module
 
 ### Advanced Parameters
 These parameters are for more advanced use. They are all optional.
+  
   6. reduction
     Name of dimension reduction to use. Default: 'pca'
   7. dims use
