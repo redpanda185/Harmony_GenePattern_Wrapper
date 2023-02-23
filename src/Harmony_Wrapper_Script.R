@@ -15,8 +15,11 @@ parser <- add_option(parser, c("--output_file"), type = 'character',
 parser <- add_option(parser, c("--cell_types"),
                      help = "Names of the cell types present in the dataset, separated by commas",
                      default = NULL)
+parser <- add_option(parser, c("--group_name"),
+                     help = "The metadata column that you would like to group by during visualization",
+                     default = "celltype")
 parser <- add_option(parser, c("--colors"),
-                     help = "The colors you want to use to label your cell types, separated by commas",
+                     help = "The colors you want to use to label the groups specified by the group_name variable, separated by commas",
                      default = NULL)
 # =================================================
 # Advanced options
@@ -30,29 +33,35 @@ parser <- add_option(parser, c("--theta"),
                      help = "Diversity clustering penalty parameter. Specify for each variable 
                      in group.by.vars. Default theta=2. theta=0 does not encourage any 
                      diversity. Larger values of theta result in more diverse clusters",
+                     type = 'double',
                      default = NULL)
 parser <- add_option(parser, c("--lambda"),
                      help = "Ridge regression penalty parameter. Specify for each variable
                      in group.by.vars. Default lambda=1. Lambda must be strictly positive.
                      Smaller values result in more aggressive correction.",
+                     type = 'double',
                      default = NULL)
 parser <- add_option(parser, c("--sigma"),
                      help = "Width of soft kmeans clusters. Default sigma=0.1. Sigma scales
                      the distance from a cell to cluster centroids. Larger values of sigma result
                      in cells assigned to more clusters. Smaller values of sigma make soft
                      kmeans cluster approach hard clustering.",
+                     type = 'double',
                      default = 0.1)
 parser <- add_option(parser, c("--nclust"),
                      help = "Number of clusters in model. nclust=1 equivalent to simple
                      linear regression.",
+                     type = 'integer',
                      default = NULL)
 parser <- add_option(parser, c("--tau"),
                      help = "Protection against overclustering small datasets with large ones.
                      tau is the expected number of cells per cluster.",
+                     type = 'double',
                      default = 0)
 parser <- add_option(parser, c("--block.size"),
                      help = "What proportion of cells to update during clustering.
                      Between 0 to 1, default 0.05. Larger values may be faster but less accurate",
+                     type = 'double',
                      default = 0.05)
 parser <- add_option(parser, c("--max.iter.harmony"),
                      help = "Maximum number of iterations that Harmony will run",
@@ -66,19 +75,35 @@ parser <- add_option(parser, c("--max.iter.cluster"),
 parser <- add_option(parser, c("--epsilon.cluster"),
                      help = "Convergence tolerance for clustering round of Harmony.
                      Set to -Inf to never stop early.",
+                     type = 'double',
                      default = 1e-5)
+parser <- add_option(parser, c("--stop.early.cluster"),
+                     help = "Whether or not to stop clustering early. 
+                     If TRUE, then the convergence tolerance is specified by the epsilon cluster parameter.
+                     Default: TRUE",
+                     type = 'logical',
+                     default = TRUE)
 parser <- add_option(parser, c("--epsilon.harmony"),
                      help = "Convergence tolerance for Harmony. Set to -Inf to
                      never stop early.",
+                     type = 'double',
                      default = 1e-4)
+parser <- add_option(parser, c("--stop.early.harmony"),
+                     help = "Whether or not to stop Harmony early. 
+                     If TRUE, then the convergence tolerance is specified by the epsilon harmony parameter
+                     Default: TRUE",
+                     type = 'logical',
+                     default = TRUE)
 parser <- add_option(parser, c("--plot_convergence"),
                      help = "Whether to print the convergence plot of the
                      clustering objective function. TRUE to plot, FALSE to suppress. This can be
                      useful for debugging.",
+                     type = 'logical',
                      default = FALSE)
 parser <- add_option(parser, c("--verbose"),
                      help = "Whether to print progress messages. TRUE to print, FALSE to
                      suppress.",
+                     type = 'logical',
                      default = TRUE)
 parser <- add_option(parser, c("--reference_values"),
                      help = "Defines reference dataset(s). Cells
@@ -88,9 +113,11 @@ parser <- add_option(parser, c("--reduction.save"),
                      help = "Keyword to save Harmony reduction. Useful if you want
                      to try Harmony with multiple parameters and save them as e.g.
                      'harmony_theta0', 'harmony_theta1', 'harmony_theta2'",
+                     type = 'character',
                      default = "harmony")
 parser <- add_option(parser, c("--assay.use"),
                      help = "Which assay to run PCA on if no PCA present?",
+                     type = 'character',
                      default = NULL)
 parser <- add_option(parser, c("--project.dim"),
                      help = "Project dimension reduction loadings. Default TRUE.",
@@ -123,7 +150,22 @@ if(!is.null(colorlist)){
   if(length(colorlist[[1]]) != length(lines)) stop("Number of colors does not match number of cell types")
 }
 
+early.cluster = args$stop.early.cluster
+epsilon.cluster = args$epsilon.cluster
+#If early.cluster is FALSE, then set epsilon.cluster to -Inf
+if(!as.logical(early.cluster)){
+  epsilon.cluster = -Inf
+}
+
+early.harmony = args$stop.early.harmony
+epsilon.harmony = args$epsilon.harmony
+#If early.harmony is FALSE, then set epsilon.harmony to -Inf
+if(!as.logical(early.harmony)){
+  epsilon.harmony = -Inf
+}
+
 #Reads in the files from file_list
+i = 1
 for (line in lines) {
   print("About to read")
   print(line)
@@ -154,6 +196,11 @@ for (line in lines) {
     names(panels)[[i]] = as.character(name)
     i = i + 1
   }
+}
+
+#Checks if there are multiple files in the file list
+if(length(panels) < 2){
+  stop("Please input two or more datasets for Harmony analysis")
 }
 
 #Runs Harmony on the given data and outputs the processed data in a Seurat object.
@@ -187,8 +234,8 @@ run_harmony <- function(datalist, args){
                block.size = args$block.size,
                max.iter.harmony = args$max.iter.harmony,
                max.iter.cluster = args$max.iter.cluster,
-               epsilon.cluster = args$epsilon.cluster,
-               epsilon.harmony = args$epsilon.harmony,
+               epsilon.cluster = epsilon.cluster,
+               epsilon.harmony = epsilon.harmony,
                plot_convergence = args$plot_convergence,
                verbose = args$verbose,
                reference_values = args$reference_values,
@@ -211,12 +258,12 @@ visualize <- function(harmonyObj, colors){
   print("Making plot!")
   if(is.null(colors)){
     print("Using default colors to make plot!")
-    p1 <- DimPlot(object = harmonyObj, reduction = "harmony", pt.size = .1, group.by = "celltype")
+    p1 <- DimPlot(object = harmonyObj, reduction = "harmony", pt.size = .1, group.by = args$group_name)
   }
   else{
     print("Plot colors:")
     lapply(colors, print)
-    p1 <- DimPlot(object = harmonyObj, reduction = "harmony", pt.size = .1, group.by = "celltype", cols = colors)
+    p1 <- DimPlot(object = harmonyObj, reduction = "harmony", pt.size = .1, group.by = args$group_name, cols = colors)
   }
   png(filename = paste(args$output_file, '_plot' ,'.png', sep = ''), width = 2000, height = 1600, res = 400)
   print(paste0("Using ", paste(args$output_file, '_plot' ,'.png', sep = ''), " as file name for the plot."))
