@@ -210,7 +210,7 @@ run_harmony <- function(datalist, args){
   #Merges all the Seurat objects into one object, while keeping the pca data. 
   for(x in 1:length(datalist)){
     if(x != 1){
-      data <- merge(data, datalist[[x]], merge.dr = "pca", merge.data = TRUE)
+      data <- merge(data, datalist[[x]], merge.data = TRUE)
     }
     metadata_list <- c(metadata_list, rep(names(datalist)[x], ncol(datalist[[x]])))
   }
