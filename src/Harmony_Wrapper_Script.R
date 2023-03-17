@@ -4,6 +4,8 @@ library(Seurat)
 library(optparse)
 library(cowplot)
 library(xfun)
+library(ggplot2)
+library(R.devices)
 
 parser = OptionParser()
 parser <- add_option(parser, c("--file_list"), 
@@ -12,12 +14,12 @@ parser <- add_option(parser, c("--file_list"),
 parser <- add_option(parser, c("--output_file"), type = 'character',
                      help = "Name of the file to save the data to", 
                      default = "harmonized_data")
-parser <- add_option(parser, c("--cell_types"),
+parser <- add_option(parser, c("--data_sets"),
                      help = "Names of the cell types present in the dataset, separated by commas",
                      default = NULL)
 parser <- add_option(parser, c("--group_name"),
                      help = "The metadata column that you would like to group by during visualization",
-                     default = "celltype")
+                     default = "dataset_name")
 parser <- add_option(parser, c("--colors"),
                      help = "The colors you want to use to label the groups specified by the group_name variable, separated by commas",
                      default = NULL)
@@ -135,7 +137,7 @@ con <- file(args$file_list, open = "r")
 lines = readLines(con)
 panels = list(NA)
 
-namelist = args$cell_types
+namelist = args$data_sets
 #Checks if the number of cell types matches the number of files given.
 if(!is.null(namelist)){
   namelist <- strsplit(namelist, split = ',')
@@ -172,7 +174,7 @@ for (line in lines) {
   if (file_ext(line) == "rds") {
     RDSinput = readRDS(line)
     name = NULL
-    if(is.null(args$cell_types)){
+    if(is.null(args$data_sets)){
       name = tail(strsplit(line, "/")[[1]], 1)
       name <- gsub("\\.rds$", "", name)
     }
@@ -215,7 +217,7 @@ run_harmony <- function(datalist, args){
     metadata_list <- c(metadata_list, rep(names(datalist)[x], ncol(datalist[[x]])))
   }
   #Sets the metadata of the Seurat object to describe the cell type from which the data originates.
-  data$celltype <- metadata_list
+  data$dataset_name <- metadata_list
   #Runs all of the pre-processing steps prior to running Harmony
   data <- data %>%
     Seurat::NormalizeData(verbose = FALSE) %>%
@@ -223,7 +225,7 @@ run_harmony <- function(datalist, args){
     ScaleData(verbose = FALSE) %>%
     RunPCA(pc.genes = pbmc@var.genes, npcs = 20, verbose = FALSE)
   harmonizedData <- data %>%
-    RunHarmony(group.by = "celltype", 
+    RunHarmony(group.by = "dataset_name", 
                reduction = args$reduction,
                dims.use = args$dims.use,
                theta = args$theta,
@@ -254,24 +256,32 @@ save_it <- function(object, fileName){
 }
 
 #Produces a scatterplot of the harmonized data and saves it as a png file
-visualize <- function(harmonyObj, colors){
+visualize <- function(harmonyObj, colors, file_name){
   print("Making plot!")
+  preHarmonyReduction <- args$reduction
+  if(is.null(preHarmonyReduction)){
+    preHarmonyReduction <- 'pca'
+  }
   if(is.null(colors)){
     print("Using default colors to make plot!")
-    p1 <- DimPlot(object = harmonyObj, reduction = "harmony", pt.size = .1, group.by = args$group_name)
+    harmony_plot <- DimPlot(object = harmonyObj, reduction = 'harmony', pt.size = .1, group.by = args$group_name) + ggtitle("After Harmony")
+    preharmony_plot <- DimPlot(object = harmonyObj, reduction = preHarmonyReduction, pt.size = .1, group.by = args$group_name) + ggtitle("Before Harmony")
   }
   else{
     print("Plot colors:")
     lapply(colors, print)
-    p1 <- DimPlot(object = harmonyObj, reduction = "harmony", pt.size = .1, group.by = args$group_name, cols = colors)
+    harmony_plot <- DimPlot(object = harmonyObj, reduction = 'harmony', pt.size = .1, group.by = args$group_name, cols = colors) + ggtitle("After Harmony")
+    preharmony_plot <- DimPlot(object = harmonyObj, reduction = preHarmonyReduction, pt.size = .1, group.by = args$group_name) + ggtitle("Before Harmony")
   }
-  png(filename = paste(args$output_file, '_plot' ,'.png', sep = ''), width = 2000, height = 1600, res = 400)
-  print(paste0("Using ", paste(args$output_file, '_plot' ,'.png', sep = ''), " as file name for the plot."))
-  plot(p1)
-  dev.off()
-  print("Plot made and saved!")
+  print("Using AfterHarmonyPlot.png  as file name for the plot.")
+  suppressGraphics(save_plot(filename = 'AfterHarmonyPlot.png', plot = harmony_plot, base_height = 16/3, base_asp = 1.25))
+  print("Using BeforeHarmonyPlot.png  as file name for the plot.")
+  suppressGraphics(save_plot(filename = 'BeforeHarmonyPlot.png', plot = preharmony_plot, base_height = 16/3, base_asp = 1.25))
+  print("Using SideToSidePlot.png  as file name for the plot.")
+  suppressGraphics(save_plot(filename = "SideToSidePlot.png", plot = plot_grid(preharmony_plot, harmony_plot), ncol = 2, base_height = 16/3, base_asp = 1.25))
+  print("Plots made and saved!")
 }
 
 output <- run_harmony(panels, args)
 save_it(output, paste(args$output_file, '.rds', sep = ''))
-visualize(output, colorlist[[1]])
+visualize(output, colorlist[[1]], args$output_file)

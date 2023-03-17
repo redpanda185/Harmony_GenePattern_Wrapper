@@ -6,12 +6,12 @@
         "parameters": [
             "Input.RDS.Files",
             "Output.Name",
-            "Cell.Types",
+            "Data.Set.Names",
             "Group.Name",
             "Colors"
         ]
     },
-    {       
+    {
         "name": "Advanced parameters",
         "description": "Advanced parameters for Harmony",
         "hidden": true,
