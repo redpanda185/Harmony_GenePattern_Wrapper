@@ -4,6 +4,16 @@
 Harmony is a tool used to correct batch effects in single-cell RNA seq datasets.
  
 ## How to use Harmony
+To use the Harmony module, you will need to have put your scRNA-seq data through the Seurat pipeline available on GenePattern (Seurat.QC --> Seurat.Preprocessing). The user must input more than two Seurat objects contained in RDS files. Once Harmony has been completed, the module will output four files:
+
+**Harmonized Data** - An RDS file containing a Seurat object with the Harmony-processed data. The Harmony-adjusted principal components can be found in the "harmony" column under the "reduction" slot in the Seurat object. The name of this file is specified by the "Output Name" parameter.
+
+**Before Harmony Plot** - A PNG file showing a scatterplot of the dimensionality-reduced data before Harmony. The method of dimensionality-reduction shown can be specified by the "reduction" parameter.
+
+**After Harmony Plot** - A PNG file showing a scatterplot of the data post-Harmony.
+
+**Side To Side Plot** - A PNG file showing the Before Harmony Plot and After Harmony Plot side by side for debugging purposes. 
+
 ### Basic Parameters
 Here are the basic parameters you will need in order to run the Harmony module.
 
