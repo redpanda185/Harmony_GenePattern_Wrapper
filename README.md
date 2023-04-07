@@ -2,6 +2,7 @@
 
 ## What is Harmony?
 Harmony is a tool used to correct batch effects in single-cell RNA seq datasets.
+![Alt text](gpunit/outputs/SideToSidePlot.png?raw=true "Harmony")
  
 ## How to use Harmony
 To use the Harmony module, you will need to have put your scRNA-seq data through the Seurat pipeline available on GenePattern (Seurat.QC --> Seurat.Preprocessing). The user must input more than two Seurat objects contained in RDS files. Once Harmony has been completed, the module will output four files:
