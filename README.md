@@ -100,6 +100,7 @@ These parameters are for more advanced use. They are all optional.
   - Harmony was developed by the Raychaudhuri Lab.
   - Original Harmony GitHub repo: https://github.com/immunogenomics/harmony
   - Harmony paper: https://pubmed.ncbi.nlm.nih.gov/31740819/
+  - Docker image used: https://hub.docker.com/r/jzl010/harmony
 
 ## Citation
   Ilya Korsunsky, Nghia Millard, Jean Fan, Kamil Slowikowski, Fan Zhang, Kevin Wei, Yuriy Baglaenko, Michael Brenner, Po-Ru Loh, Soumya Raychaudhuri
