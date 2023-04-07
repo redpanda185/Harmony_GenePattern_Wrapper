@@ -19,7 +19,7 @@ The following objects are masked from ‘package:base’:
 
     attr, isFALSE
 
-Warning: The DimReduc pca is not present in all objects being merged. Skipping and continuing.
+R.devices v2.17.1 (2022-06-21 08:00:02 UTC) successfully loaded. See ?R.devices for help.
 Calculating gene variances
 0%   10   20   30   40   50   60   70   80   90   100%
 [----|----|----|----|----|----|----|----|----|----|

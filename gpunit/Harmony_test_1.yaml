@@ -1,14 +1,14 @@
 
-name: Harmony_test_1
-# description: created from job 90608
-# ET(ms): 656000# from server:  https://beta.genepattern.org/gp/
+name: gpunit_91220
+# description: created from job 91220
+# ET(ms): 258000# from server:  https://beta.genepattern.org/gp/
 module: Harmony
-# lsid: urn:lsid:8080.gpserver.ip-172-31-26-71.ip-172-31-26-71.ec2.internal:genepatternmodules:676:3.5
+# lsid: urn:lsid:8080.gpserver.ip-172-31-26-71.ip-172-31-26-71.ec2.internal:genepatternmodules:676:3.10
 params: 
     "Input.RDS.Files": "inputs/Input.RDS.Files.list.txt"
     "Output.Name": "harmonized_data"
-    "Cell.Types": "[]"
-    "Group.Name": "celltype"
+    "Data.Set.Names": "[]"
+    "Group.Name": "dataset_name"
     "Colors": "[]"
     "reduction": "pca"
     "dims.use": "[]"
@@ -24,18 +24,19 @@ params:
     "epsilon.cluster": "0.00005"
     "stop.early.harmony": "TRUE"
     "epsilon.harmony": "0.0004"
-    "plot_convergence": "TRUE"
+    "plot_convergence": "FALSE"
     "verbose": "TRUE"
     "reference_values": ""
-    "reduction.save": ""
+    "reduction.save": "harmony"
     "assay.use": ""
     "project.dim": "TRUE"
 
 assertions: 
     jobStatus: success
     files: 
-        Rplots.pdf: !!null
+        AfterHarmonyPlot.png: !!null
+        BeforeHarmonyPlot.png: !!null
+        SideToSidePlot.png: !!null
         harmonized_data.rds: !!null
-        harmonized_data_plot.png: !!null
         stderr.txt: !!null
         stdout.txt: !!null

@@ -4,13 +4,13 @@ $help
 [1] FALSE
 
 $file_list
-[1] "/opt/gpbeta_2/gp_home/users/jzl010/uploads/tmp/run1237213232671297899.tmp/Input.RDS.Files.list.txt"
+[1] "/opt/gpbeta_2/gp_home/users/jzl010/uploads/tmp/run737024634429449260.tmp/Input.RDS.Files.list.txt"
 
 $output_file
 [1] "harmonized_data"
 
 $group_name
-[1] "celltype"
+[1] "dataset_name"
 
 $reduction
 [1] "pca"
@@ -49,7 +49,7 @@ $stop.early.harmony
 [1] TRUE
 
 $plot_convergence
-[1] TRUE
+[1] FALSE
 
 $verbose
 [1] TRUE
@@ -61,12 +61,12 @@ $project.dim
 [1] TRUE
 
 [1] "================================================"
-[1] "/opt/gpbeta_2/gp_home/users/jzl010/uploads/tmp/run1237213232671297899.tmp/Input.RDS.Files.list.txt"
+[1] "/opt/gpbeta_2/gp_home/users/jzl010/uploads/tmp/run737024634429449260.tmp/Input.RDS.Files.list.txt"
 [1] "About to read"
-[1] "/opt/gpbeta_2/gp_home/users/jzl010/uploads/tmp/run8571086401852789368.tmp/Input.RDS.Files/1/ctrl.seurat.rds"
+[1] "/opt/gpbeta_2/gp_home/users/jzl010/uploads/tmp/run8061682283169880196.tmp/Input.RDS.Files/1/ctrl.seurat.rds"
 [1] "Using ctrl.seurat as the name of the column"
 [1] "About to read"
-[1] "/opt/gpbeta_2/gp_home/users/jzl010/uploads/tmp/run1694348824482943617.tmp/Input.RDS.Files/2/stim.seurat.rds"
+[1] "/opt/gpbeta_2/gp_home/users/jzl010/uploads/tmp/run7060867992218125648.tmp/Input.RDS.Files/2/stim.seurat.rds"
 [1] "Using stim.seurat as the name of the column"
 [1] "Saved file!"
 An object of class Seurat 
@@ -75,5 +75,7 @@ Active assay: RNA (14053 features, 2000 variable features)
  2 dimensional reductions calculated: pca, harmony
 [1] "Making plot!"
 [1] "Using default colors to make plot!"
-[1] "Using harmonized_data_plot.png as file name for the plot."
-[1] "Plot made and saved!"
+[1] "Using AfterHarmonyPlot.png  as file name for the plot."
+[1] "Using BeforeHarmonyPlot.png  as file name for the plot."
+[1] "Using SideToSidePlot.png  as file name for the plot."
+[1] "Plots made and saved!"
