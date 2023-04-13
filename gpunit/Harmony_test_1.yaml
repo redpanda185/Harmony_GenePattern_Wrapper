@@ -3,7 +3,7 @@ name: gpunit_91220
 # description: created from job 91220
 # ET(ms): 258000# from server:  https://beta.genepattern.org/gp/
 module: Harmony
-# lsid: urn:lsid:8080.gpserver.ip-172-31-26-71.ip-172-31-26-71.ec2.internal:genepatternmodules:676:3.10
+# lsid: urn:lsid:genepattern.org:module.analysis:00435
 params: 
     "Input.RDS.Files": "inputs/Input.RDS.Files.list.txt"
     "Output.Name": "harmonized_data"
